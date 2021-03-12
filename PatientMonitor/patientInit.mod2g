@@ -1,0 +1,8 @@
+use patient as knowledge.
+
+module patientInit {
+	if true then insert(now(0)).
+
+	forall bel(metric(Metric, Time, Value)) do
+		delete(metric(Metric, Time, Value)).
+}

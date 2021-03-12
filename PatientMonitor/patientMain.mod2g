@@ -1,0 +1,8 @@
+use patient as knowledge.
+use patientActions as actionspec.
+exit = never.
+
+module patientMain {
+	forall bel(recommends(Action)) do
+		recommend(Action).
+}

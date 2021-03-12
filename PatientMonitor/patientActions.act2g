@@ -1,0 +1,9 @@
+use patient as knowledge.
+
+define recommend(Action) with
+	pre { not(recommended(Action, _)), now(Now) }
+	post { recommended(Action, Now) }
+
+define alert(Message) with
+	pre {}
+	post {}
