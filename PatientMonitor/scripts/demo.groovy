@@ -196,7 +196,7 @@ demo2 = {
 	actionHandlers["headache medication"] = { action ->
 		medication["headache"] = true
 		after(1) { respond("headache medication?", true) }
-		after(25) { headache = false }
+		after(45) { headache = false }
 	}
 	
 	after(5) {
@@ -218,7 +218,7 @@ demo2 = {
 		after(1) { respond(question, headache) }
 	}
 	
-	for (i in 0 .. 60) {
+	for (i in 0 .. 90) {
 		metric(metrics)
 		deltas.each { metric, delta ->
 			metrics[metric] += delta
@@ -267,7 +267,7 @@ demo3 = {
 		after(1) { respond(question, headache) }
 	}
 	
-	for (i in 0 .. 120) {
+	for (i in 0 .. 60) {
 		metric(metrics)
 		deltas.each { metric, delta ->
 			metrics[metric] += delta

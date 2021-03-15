@@ -72,7 +72,7 @@ recommend(400, 'headache medication') :-
 	response('headache medication?', false, 0, 120).
 
 recommend(300, rest) :-
-	response('headache?', true, 0, 30),
+	response('headache?', true, 0, 5),
 	response('headache medication?', true, 0, 120).
 
 recommend(400, 'cough?') :-
