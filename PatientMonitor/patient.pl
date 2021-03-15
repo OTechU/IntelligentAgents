@@ -24,33 +24,68 @@ recommends(Action) :-
 	keysort(Actions, Sorted),
 	last(Sorted, _-Action).
 
-recommend(inf, 'blood pressure medication?') :-
-	now(Now),
-	average(act, 10, Act), Act < 50,
-	current(bp, BP), BP > 120,
-	\+ (response('blood pressure medication?', _, Time), Time + 60 >= Now).
-
-recommend(500, emergency) :-
-	now(Now),
-	average(act, 10, Act), Act < 50,
-	current(bp, BP), BP > 120,
-	response('blood pressure medication?', true, Time),
-	Min is Now - 60, Max is Now - 20,
+response(Question, Answer, MinAge, MaxAge) :-
+	response(Question, Answer, Time),
+	now(Now), Min is Now - MaxAge, Max is Now - MinAge,
 	between(Min, Max, Time).
 
-recommend(250, 'blood pressure medication') :-
-	now(Now), 
+high_resting_bp :-
 	average(act, 10, Act), Act < 50,
-	current(bp, BP), BP > 120,
-	response('blood pressure medication?', false, Time),
-	Time + 60 >= Now.
+	current(bp, BP), BP > 120.
+
+recommend(500, 'blood pressure medication?') :-
+	high_resting_bp,
+	\+ response('blood pressure medication?', _, 0, 60).
+
+recommend(500, 'seek medical advice') :-
+	high_resting_bp,
+	response('blood pressure medication?', true, 20, 60).
+
+recommend(250, 'blood pressure medication') :-
+	high_resting_bp,
+	response('blood pressure medication?', false, 0, 60).
 
 recommend(200, rest) :-
 	current(act, Act), Act > 80,
 	current(bp, BP), BP > 120.
 
+high_temperature :-
+	current(temp, Temp), Temp > 100.
+
+recommend(400, 'headache?') :-
+	high_temperature,
+	\+ response('headache?', _, 0, 30).
+
+recommend(400, 'headache?') :-
+	response('headache?', true, 30, 120).
+
+recommend(400, 'headache medication?') :-
+	high_temperature,
+	response('headache?', true, 0, 30),
+	response('cough?', false, 0, 30),
+	\+ response('headache medication?', _, 0, 120).
+
+recommend(400, 'headache medication') :-
+	high_temperature,
+	response('headache?', true, 0, 30),
+	response('cough?', false, 0, 30),
+	response('headache medication?', false, 0, 120).
+
+recommend(300, rest) :-
+	response('headache?', true, 0, 30),
+	response('headache medication?', true, 0, 120).
+
+recommend(400, 'cough?') :-
+	high_temperature,
+	\+ response('cough?', _, 0, 30).
+
+recommend(400, 'seek medical advice') :-
+	high_temperature,
+	response('headache?', true, 0, 30),
+	response('cough?', true, 0, 30).
+
 recommend(100, cooldown) :-
-	current(temp, Temp), Temp > 98.
+	high_temperature.
 
 recommend(50, exercise) :-
 	average(act, 10, Act), Act < 20,

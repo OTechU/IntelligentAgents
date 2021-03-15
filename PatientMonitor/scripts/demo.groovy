@@ -1,4 +1,4 @@
-//require org.jfree:jfreechart:1.0.19
+//require org.jfree:jfreechart:1.5.3
 
 /*
 Use-Case: Agent Monitoring Patient with Enhanced Wearable (Steady State Example)
@@ -26,9 +26,11 @@ Temperature: NR 97.8 - 99 dgs
 
 import org.jfree.chart.ChartFactory
 import org.jfree.chart.ChartPanel
-import org.jfree.chart.annotations.XYTextAnnotation
+import org.jfree.chart.annotations.XYPointerAnnotation
+import org.jfree.chart.annotations.XYShapeAnnotation
 import org.jfree.chart.annotations.XYLineAnnotation
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
+import org.jfree.chart.ui.TextAnchor
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import java.awt.*
@@ -105,7 +107,7 @@ now = {
 metric = { data ->
 	time += 1
 	perceive("now", time)
-	eventTop = 50
+	eventTop = 50 + time % 10
 	data.each { metric, value ->
 		perceive("metric", metric, value)
 		series[metric].add(time, value)
@@ -122,6 +124,11 @@ after = { delay, handler ->
 
 respond = { question, answer ->
 	perceive("response", question, answer)
+	label = "${question} -> ${answer}"
+	annotation = new XYPointerAnnotation(label, time, eventTop, 1.57079632679)
+	annotation.font = new Font("Helvetica", Font.BOLD, 15)
+	xyplot.addAnnotation(annotation)
+	eventTop -= 10
 }
 
 reset = {
@@ -137,7 +144,7 @@ reset = {
 
 demo1 = {
 	reset() 
-	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 90]
+	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
 	deltas = [:]
 	medication = [:]
 	
@@ -150,9 +157,7 @@ demo1 = {
 		medication["blood pressure"] = true
 		respond("blood pressure medication?", true)
 		deltas.bp = -2
-		after(10) {
-			deltas.bp = 0
-		}
+		after(10) { deltas.bp = 0 }
 	}
 	
 	after(5) {
@@ -161,7 +166,7 @@ demo1 = {
 	}
 	
 	actionHandlers["blood pressure medication?"] = { question ->
-		respond(question, medication["blood pressure"] == true)
+		after(1) { respond(question, medication["blood pressure"] == true) }
 	}
 	
 	for (i in 0 .. 60) {
@@ -173,16 +178,114 @@ demo1 = {
 	}
 }
 
+demo2 = {
+	reset()
+	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
+	deltas = [:]
+	medication = [:]
+	headache = false
+	cough = false
+	
+	actionHandlers["rest"] = { action ->
+		metrics.act = 10
+	}
+	
+	actionHandlers["headache medication"] = { action ->
+		medication["headache"] = true
+		after(1) { respond("headache medication?", true) }
+		after(25) { headache = false }
+	}
+	
+	after(5) {
+		deltas.temp = 0.5
+		headache = true
+		after(8) { deltas.temp = 0 }
+	}
+	
+	
+	actionHandlers["headache medication?"] = { question ->
+		after(1) { respond(question, medication["headache"] == true) }
+	}
+	
+	actionHandlers["cough?"] = { question ->
+		after(1) { respond(question, cough) }
+	}
+	
+	actionHandlers["headache?"] = { question ->
+		after(1) { respond(question, headache) }
+	}
+	
+	for (i in 0 .. 60) {
+		metric(metrics)
+		deltas.each { metric, delta ->
+			metrics[metric] += delta
+		}
+		if (medication["headache"]) {
+			metrics.temp = (3 * metrics.temp + 97) / 4
+		}
+		sleep(500)
+	}
+}
+
+demo3 = {
+	reset()
+	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
+	deltas = [:]
+	medication = [:]
+	headache = false
+	cough = true
+	
+	actionHandlers["rest"] = { action ->
+		metrics.act = 10
+	}
+	
+	actionHandlers["headache medication"] = { action ->
+		medication["headache"] = true
+		respond("headache medication?", true)
+		after(25) { headache = false }
+	}
+	
+	after(5) {
+		deltas.temp = 0.5
+		headache = true
+		after(8) { deltas.temp = 0 }
+	}
+	
+	
+	actionHandlers["headache medication?"] = { question ->
+		respond(question, medication["headache"] == true)
+	}
+	
+	actionHandlers["cough?"] = { question ->
+		after(1) { respond(question, cough) }
+	}
+	
+	actionHandlers["headache?"] = { question ->
+		after(1) { respond(question, headache) }
+	}
+	
+	for (i in 0 .. 120) {
+		metric(metrics)
+		deltas.each { metric, delta ->
+			metrics[metric] += delta
+		}
+		if (medication["headache"]) {
+			metrics.temp = (3 * metrics.temp + 97) / 4
+		}
+		sleep(500)
+	}
+}
+
 action("alert") { message ->
 	logger.info(message.toString())
 }
 
 action("recommend") { action ->
 	logger.info("recommended {}", action)
-	annotation = new XYTextAnnotation(action, time, eventTop)
-	eventTop -= 5
+	annotation = new XYPointerAnnotation(action, time, eventTop, 1.57079632679)
 	annotation.font = new Font("Helvetica", Font.BOLD, 15)
 	xyplot.addAnnotation(annotation)
+	eventTop -= 10
 	handler = actionHandlers[action]
 	if (handler != null) handler(action)
 }
