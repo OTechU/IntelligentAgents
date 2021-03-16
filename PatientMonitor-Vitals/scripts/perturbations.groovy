@@ -98,11 +98,11 @@ metric([hr: 50 , bp: 70, resp: 30, o2: 80, temp: 109, act: 65 ])
 
 
 
-// ************************************************************
+// *********************************************************************
 // COMPLEX DEMOs
 // @Console: demo1(), reset(), demo2(), reset(), demo3()
-// Use this ONLY on the COMPLEX Demo.
-// ************************************************************
+// Use the BELOW ONLY on the PatientMonitor or PatientMonitor-Complex Demo.
+// **********************************************************************
 
 
 // RESET the DEMOs after each run - run to completion.
@@ -158,18 +158,26 @@ demo2()
 // Unlike demo2, this type the patient *has* a cough so the agent recommends seeking medical 
 // advice since this may be the symptoms of Covid-19.
 
-// Demo #3 - - Temperature begins to rise. Headsche? Caugh? Seek 
+// Demo #3 - Temperature begins to rise. Headsche? Caugh? Seek 
 // Medical Advice due to CV-19.
 demo3()
 
 
 
+// *********
+// DEMO #4
+// *********
 
 
+// The agent is monitoring a patient's blood glucose level, advising the patient to eat, 
+// exercise or rest as required.
+// In this demo, there is more delay between the recommendations and the effects to simulate 
+// how a patient might take time to follow advice. The agent's memory and ability to ask 
+// questions prevents invalid recommedations.
 
-
-
-
+// Demo #4 - A more complex example of monitoring a patients blood glucose level, advising 
+// the patient to eat, exercise, or rest as required.
+demo4()
 
 
 
