@@ -294,6 +294,7 @@ demo4 = {
 	deltas = [:]
 	targets = [:]
 	eaten = false
+	insulin = false
 		
 	actionHandlers["rest"] = { action ->
 		targets.hr = 80
@@ -303,6 +304,10 @@ demo4 = {
 	
 	actionHandlers["eaten?"] = { question ->
 		respond(question, eaten)
+	}
+	
+	actionHandlers["can exercise?"] = { question ->
+		respond(question, time < 120)
 	}
 	
 	actionHandlers["eat"] = {
@@ -324,6 +329,18 @@ demo4 = {
 		}
 	}
 	
+	actionHandlers["insulin?"] = { question ->
+		respond(question, insulin)
+	}
+	
+	actionHandlers["insulin"] = {
+		insulin = true
+		targets.glu = 40
+		after(5) {
+			targets.remove("glu")
+		}
+	}
+	
 	for (i in 0 .. 240) {
 		metric(metrics)
 		deltas.each { metric, delta ->
@@ -335,7 +352,7 @@ demo4 = {
 		metrics.glu -= metrics.act / 20
 		if (metrics.glu < 10) metrics.glu = 10
 		if (metrics.glu > 160) metrics.glu = 160
-		sleep(500)
+		sleep(100)
 	}
 }
 

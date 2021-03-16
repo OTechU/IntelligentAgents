@@ -109,23 +109,41 @@ recommend(800, 'eaten?') :-
 
 recommend(601, eat) :-
 	current(glu, Glu), Glu < 60,
-	response('eaten?', false, 0, 60).
-	%,
-	%\+ response('eaten?', true, 30, 60).
+	response('eaten?', false, 0, 60),
+	\+ response('eaten?', true, 30, 60).
 
+recommend(602, 'can exercise?') :-
+	current(glu, Glu), Glu > 100,
+	response('eaten?', _, 0, 120),
+	current(hr, HR), HR < 100,
+	current(act, Act), Act < 20,
+	(\+ response('eaten?', true, 0, 30)),
+	(\+ response('can exercise?', _, 0, 30)),
+	(\+ recommended(exercise, _)).
+	
 recommend(602, exercise) :-
 	current(glu, Glu), Glu > 100,
 	response('eaten?', _, 0, 120),
 	average(hr, 5, HR), HR < 100,
 	average(act, 5, Act), Act < 20,
+	response('can exercise?', true, 0, 30),
 	\+ response('eaten?', true, 0, 30).
 
 recommend(603, rest) :-
 	average(act, 5, Act), Act > 80,
 	average(hr, 5, HR), HR > 100.
 
+recommend(901, 'insulin?') :-
+	current(glu, Glu), Glu > 140,
+	response('can exercise?', false, 0, 30),
+	response('eaten?', _, 0, 120),
+	(\+ response('eaten?', true, 0, 30)),
+	(\+ response('insulin?', _, 0, 30)).
+
 recommend(900, insulin) :-
 	current(glu, Glu), Glu > 140,
-	response('eaten?', false, 0, 30),
-	average(hr, 20, HR), HR > 100.
+	response('insulin?', false, 0, 30),
+	response('can exercise?', false, 0, 30),
+	response('eaten?', _, 0, 120),
+	(\+ response('eaten?', true, 0, 30)).
 
