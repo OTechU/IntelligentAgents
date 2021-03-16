@@ -233,7 +233,7 @@ demo3 = {
 	deltas = [:]
 	medication = [:]
 	headache = false
-	cough = true
+	cough = false
 	
 	actionHandlers["rest"] = { action ->
 		metrics.act = 10
@@ -242,7 +242,7 @@ demo3 = {
 	actionHandlers["headache medication"] = { action ->
 		medication["headache"] = true
 		respond("headache medication?", true)
-		after(25) { headache = false }
+		after(15) { headache = false }
 	}
 	
 	after(5) {
@@ -251,6 +251,10 @@ demo3 = {
 		after(8) { deltas.temp = 0 }
 	}
 	
+	after(40) {
+		cough = true
+		deltas.o2 = -1
+	}
 	
 	actionHandlers["headache medication?"] = { question ->
 		respond(question, medication["headache"] == true)

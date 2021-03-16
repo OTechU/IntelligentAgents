@@ -75,14 +75,26 @@ recommend(300, rest) :-
 	response('headache?', true, 0, 30),
 	response('headache medication?', true, 0, 120).
 
+high_temperature_or_medication :-
+	high_temperature;
+	response('headache medication?', true, 0, 120).
+
 recommend(400, 'cough?') :-
 	high_temperature,
 	\+ response('cough?', _, 0, 30).
 
-recommend(400, 'seek medical advice') :-
-	high_temperature,
-	response('headache?', true, 0, 30),
-	response('cough?', true, 0, 30).
+recommend(600, rest) :-
+	high_temperature_or_medication,
+	response('cough?', true, 0, 120).
+
+recommend(600, 'monitor breathing') :-
+	high_temperature_or_medication,
+	response('cough?', true, 0, 120).
+
+recommend(700, 'seek medical advice') :-
+	high_temperature_or_medication,
+	response('cough?', true, 0, 240),
+	current(o2, O2), O2 < 90.
 
 recommend(100, cooldown) :-
 	high_temperature.
