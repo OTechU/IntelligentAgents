@@ -1,0 +1,36 @@
+use patient as knowledge.
+use patientActions as actionspec.
+
+module patientEvents {
+	% delete old information on reset
+	forall percept(reset), bel(recommended(Action, Time)) do
+		delete(recommended(Action, Time)).
+	
+	forall percept(reset), bel(metric(Metric, Time, Value)) do
+		delete(metric(Metric, Time, Value)).
+	
+	forall percept(reset), bel(response(Question, Answer, Time)) do
+		delete(response(Question, Answer, Time)).
+	
+	% get new time
+	forall percept(now(New)), bel(now(Old)) do
+		delete(now(Old)) + insert(now(New)).
+
+	% delete expired recommendations
+	forall bel(now(Now), recommended(Action, Time), Time + 10 =< Now) do
+		delete(recommended(Action, Time)).
+	
+	% delete expired metrics
+	forall bel(now(Now), metric(Metric, Time, Value), Time + 20 =< Now) do
+		delete(metric(Metric, Time, Value)).
+	
+	% insert new metrics
+	forall percept(metric(Metric, Value)), bel(now(Now)) do
+		insert(metric(Metric, Now, Value)).
+	
+	forall percept(response(Question, _)), bel(response(Question, OldAnswer, OldTime)) do
+		delete(response(Question, OldAnswer, OldTime)).
+	
+	forall percept(response(Question, Answer)), bel(now(Now)) do
+		insert(response(Question, Answer, Now)).
+}

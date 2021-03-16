@@ -1,0 +1,11 @@
+use "uber-eis-1.0-SNAPSHOT.jar" as environment with script = "demo.groovy".
+
+define patientMonitor as agent {
+	use patientMain as main module.
+	use patientEvents as event module.
+	use patientInit as init module.
+}
+
+launchpolicy{
+	when * launch patientMonitor.
+}

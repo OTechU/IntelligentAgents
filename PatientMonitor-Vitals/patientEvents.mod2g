@@ -1,0 +1,22 @@
+use patient as knowledge.
+use patientActions as actionspec.
+
+module patientEvents {
+	forall percept(reset), bel(recommended(Action, Time)) do
+		delete(recommended(Action, Time)).
+	
+	forall percept(reset), bel(metric(Metric, Time, Value)) do
+		delete(metric(Metric, Time, Value)).
+	
+	forall percept(metric(_, Time, _)), bel(now(Now), Now < Time) do
+		delete(now(Now)) + insert(now(Time)).
+
+	forall bel(now(Now), recommended(Action, Time), Time + 10 =< Now) do
+		delete(recommended(Action, Time)).
+	
+	forall bel(now(Now), metric(Metric, Time, Value), Time + 20 =< Now) do
+		delete(metric(Metric, Time, Value)).
+	
+	forall percept(metric(Metric, Time, Value)) do
+		insert(metric(Metric, Time, Value)).
+}

@@ -1,0 +1,5 @@
+use patient as knowledge.
+
+module patientInit {
+	if true then insert(now(0)).
+}
