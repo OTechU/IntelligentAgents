@@ -96,9 +96,16 @@ frame.setVisible(true)
 
 
 time = 0
-eventTop = 50
+eventTop = 20
 actionHandlers = [:]
 eventHandlers = [:]
+
+annotate = { label ->
+	annotation = new XYPointerAnnotation(label, time, eventTop, 1.57079632679)
+	annotation.font = new Font("Helvetica", Font.BOLD, 15)
+	xyplot.addAnnotation(annotation)
+	eventTop -= 20
+}
 
 now = {
 	perceive("now", time)
@@ -107,7 +114,7 @@ now = {
 metric = { data ->
 	time += 1
 	perceive("now", time)
-	eventTop = 50 + time % 10
+	eventTop = 20 + 4 * (time % 10)
 	data.each { metric, value ->
 		perceive("metric", metric, value)
 		series[metric].add(time, value)
@@ -124,17 +131,13 @@ after = { delay, handler ->
 
 respond = { question, answer ->
 	perceive("response", question, answer)
-	label = "${question} -> ${answer}"
-	annotation = new XYPointerAnnotation(label, time, eventTop, 1.57079632679)
-	annotation.font = new Font("Helvetica", Font.BOLD, 15)
-	xyplot.addAnnotation(annotation)
-	eventTop -= 10
+	annotate("${question} -> ${answer}")
 }
 
 reset = {
 	perceive("reset")
 	time = 0
-	eventTop = 50
+	eventTop = 20
 	actionHandlers = [:]
 	series.each { name, values ->
 		values.clear()
@@ -193,7 +196,7 @@ demo2 = {
 	actionHandlers["headache medication"] = { action ->
 		medication["headache"] = true
 		after(1) { respond("headache medication?", true) }
-		after(25) { headache = false }
+		after(45) { headache = false }
 	}
 	
 	after(5) {
@@ -215,7 +218,7 @@ demo2 = {
 		after(1) { respond(question, headache) }
 	}
 	
-	for (i in 0 .. 60) {
+	for (i in 0 .. 90) {
 		metric(metrics)
 		deltas.each { metric, delta ->
 			metrics[metric] += delta
@@ -268,7 +271,7 @@ demo3 = {
 		after(1) { respond(question, headache) }
 	}
 	
-	for (i in 0 .. 120) {
+	for (i in 0 .. 60) {
 		metric(metrics)
 		deltas.each { metric, delta ->
 			metrics[metric] += delta
@@ -286,10 +289,7 @@ action("alert") { message ->
 
 action("recommend") { action ->
 	logger.info("recommended {}", action)
-	annotation = new XYPointerAnnotation(action, time, eventTop, 1.57079632679)
-	annotation.font = new Font("Helvetica", Font.BOLD, 15)
-	xyplot.addAnnotation(annotation)
-	eventTop -= 10
+	annotate(action)
 	handler = actionHandlers[action]
 	if (handler != null) handler(action)
 }
