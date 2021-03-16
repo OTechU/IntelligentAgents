@@ -22,7 +22,7 @@ average(Metric, Age, Average) :-
 recommends(Action) :-
 	findall(P-A, recommend(P, A), Actions),
 	keysort(Actions, Sorted),
-	last(Sorted, _-Action).
+	last(Sorted, _-Action),!.
 
 response(Question, Answer, MinAge, MaxAge) :-
 	response(Question, Answer, Time),
@@ -80,7 +80,7 @@ high_temperature_or_medication :-
 	response('headache medication?', true, 0, 120).
 
 recommend(400, 'cough?') :-
-	high_temperature,
+	high_temperature_or_medication,
 	\+ response('cough?', _, 0, 30).
 
 recommend(600, rest) :-
@@ -102,4 +102,30 @@ recommend(100, cooldown) :-
 recommend(50, exercise) :-
 	average(act, 10, Act), Act < 20,
 	current(bp, BP), BP < 80.
+
+recommend(800, 'eaten?') :-
+	current(glu, Glu), (Glu > 100; Glu < 60),
+	\+ response('eaten?', _, 0, 120).
+
+recommend(601, eat) :-
+	current(glu, Glu), Glu < 60,
+	response('eaten?', false, 0, 60).
+	%,
+	%\+ response('eaten?', true, 30, 60).
+
+recommend(602, exercise) :-
+	current(glu, Glu), Glu > 100,
+	response('eaten?', _, 0, 120),
+	average(hr, 5, HR), HR < 100,
+	average(act, 5, Act), Act < 20,
+	\+ response('eaten?', true, 0, 30).
+
+recommend(603, rest) :-
+	average(act, 5, Act), Act > 80,
+	average(hr, 5, HR), HR > 100.
+
+recommend(900, insulin) :-
+	current(glu, Glu), Glu > 140,
+	response('eaten?', false, 0, 30),
+	average(hr, 20, HR), HR > 100.
 

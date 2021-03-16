@@ -49,4 +49,14 @@ Run `demo3()` in the console.
 * The patient starts in a normal state.
 * After 5 minutes, the patient develops a fever and a headache.
 * When their temperature exceeds 100, the agent asks if they have a headache and/or a cough.
-* Unlike demo2, this type the patient has a cough so the agent recommends seeking medical advice since this may be the symptoms of Covid-19.
+* At first the patient has no cough and so the agent recommends takng medication for their headache.
+* After a while, the agent checks in with the patient. Although their temperature is now normal, the agent remembers that they have taken medication recently and so should still check.
+* This time the patient has a cough so the agent recommends monitoring their breathing.
+* After some time, the patient's O2 saturation drops, prompting the agent to advise seeking medical advice since this may be the symptoms of Covid-19.
+
+## Demo4
+
+Run `demo4()` in the console.
+
+* The agent is monitoring a patient's blood glucose level, advising the patient to eat, exercise or rest as required.
+* In this demo, there is more delay between the recommendations and the effects to simulate how a patient might take time to follow advice. The agent's memory and ability to ask questions prevents invalid recommedations.

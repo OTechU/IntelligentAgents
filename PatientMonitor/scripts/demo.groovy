@@ -43,7 +43,7 @@ import javax.swing.text.SimpleAttributeSet
 
 heartRate = new XYSeries("Heart Rate")
 bloodPressure = new XYSeries("Blood Pressure")
-respRate = new XYSeries("Respiration Rate")
+bloodGlucose = new XYSeries("Blood Glucose")
 o2Saturation = new XYSeries("O2 Saturation")
 activity= new XYSeries("Activity")
 temperature = new XYSeries("Temperature")
@@ -51,7 +51,7 @@ temperature = new XYSeries("Temperature")
 series = [
 	hr: heartRate,
 	bp: bloodPressure,
-	resp: respRate,
+	glu: bloodGlucose,
 	o2: o2Saturation,
 	act: activity,
 	temp: temperature
@@ -96,15 +96,18 @@ frame.setVisible(true)
 
 
 time = 0
-eventTop = 20
+eventTop = 40
 actionHandlers = [:]
 eventHandlers = [:]
 
 annotate = { label ->
-	annotation = new XYPointerAnnotation(label, time, eventTop, 1.57079632679)
+	annotation = new XYPointerAnnotation(label, time, eventTop, -1.57079632679)
 	annotation.font = new Font("Helvetica", Font.BOLD, 15)
 	xyplot.addAnnotation(annotation)
-	eventTop -= 20
+	eventTop -= 2
+	if (eventTop < 10) {
+		eventTop = 40
+	}
 }
 
 now = {
@@ -114,7 +117,6 @@ now = {
 metric = { data ->
 	time += 1
 	perceive("now", time)
-	eventTop = 20 + 4 * (time % 10)
 	data.each { metric, value ->
 		perceive("metric", metric, value)
 		series[metric].add(time, value)
@@ -137,7 +139,7 @@ respond = { question, answer ->
 reset = {
 	perceive("reset")
 	time = 0
-	eventTop = 20
+	eventTop = 40
 	actionHandlers = [:]
 	series.each { name, values ->
 		values.clear()
@@ -147,7 +149,7 @@ reset = {
 
 demo1 = {
 	reset() 
-	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
+	metrics = [hr: 80, bp: 90, glu: 70, o2: 98, act: 10, temp: 97]
 	deltas = [:]
 	medication = [:]
 	
@@ -183,7 +185,7 @@ demo1 = {
 
 demo2 = {
 	reset()
-	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
+	metrics = [hr: 80, bp: 90, glu: 70, o2: 98, act: 10, temp: 97]
 	deltas = [:]
 	medication = [:]
 	headache = false
@@ -232,11 +234,12 @@ demo2 = {
 
 demo3 = {
 	reset()
-	metrics = [hr: 80, bp: 90, resp: 70, o2: 98, act: 10, temp: 97]
+	metrics = [hr: 80, bp: 90, glu: 70, o2: 98, act: 10, temp: 97]
 	deltas = [:]
 	medication = [:]
 	headache = false
 	cough = false
+	temp_target = 97
 	
 	actionHandlers["rest"] = { action ->
 		metrics.act = 10
@@ -257,6 +260,8 @@ demo3 = {
 	after(40) {
 		cough = true
 		deltas.o2 = -1
+		deltas.hr = 0.5
+		temp_target = 103
 	}
 	
 	actionHandlers["headache medication?"] = { question ->
@@ -277,8 +282,59 @@ demo3 = {
 			metrics[metric] += delta
 		}
 		if (medication["headache"]) {
-			metrics.temp = (3 * metrics.temp + 97) / 4
+			metrics.temp = (3 * metrics.temp + temp_target) / 4
 		}
+		sleep(500)
+	}
+}
+
+demo4 = {
+	reset()
+	metrics = [hr: 80, bp: 90, glu: 70, o2: 98, act: 10, temp: 97]
+	deltas = [:]
+	targets = [:]
+	eaten = false
+		
+	actionHandlers["rest"] = { action ->
+		targets.hr = 80
+		targets.act = 10
+		targets.remove("glu")
+	}
+	
+	actionHandlers["eaten?"] = { question ->
+		respond(question, eaten)
+	}
+	
+	actionHandlers["eat"] = {
+		after(5) {
+			eaten = true
+			targets.glu = 160
+			respond("eaten?", true)
+		}
+		after(60) {
+			eaten = false
+		}
+	}
+	
+	actionHandlers["exercise"] = {
+		after(5) {
+			targets.hr = 120
+			targets.act = 100
+			targets.remove("glu")
+		}
+	}
+	
+	for (i in 0 .. 240) {
+		metric(metrics)
+		deltas.each { metric, delta ->
+			metrics[metric] += delta
+		}
+		targets.each { metric, target ->
+			metrics[metric] = (3 * metrics[metric] + target) / 4
+		}
+		metrics.glu -= metrics.act / 20
+		if (metrics.glu < 10) metrics.glu = 10
+		if (metrics.glu > 160) metrics.glu = 160
 		sleep(500)
 	}
 }
