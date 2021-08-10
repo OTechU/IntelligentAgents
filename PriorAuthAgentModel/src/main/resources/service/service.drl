@@ -1,0 +1,78 @@
+//created on: Jul 16, 2021
+package model
+
+//list any import classes here.
+import model.ServiceAgent;
+import data.MedicalInfo;
+import data.Patient;
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+//declare any global variables here
+
+
+
+
+
+rule "Initial message"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("initial-info") )
+		$s : ServiceAgent( name.equals(((AID)$r).getName()) )
+	then
+		$s.parseForm($c);
+		retract($a);		
+end
+
+rule "Send cpt and icd codes"
+	when
+		$m : MedicalInfo( !cptCode.equals(""), !icd10Codes.equals(""), $c : cptCode, $i : icd10Codes )
+		$p : Patient ( hospitalized != null, $h : hospitalized )
+		$s : ServiceAgent( demo_step == 2 )
+	then
+		$s.quickMessage($s.getLevelofcare(), $s, $c + "-" + $i + "-" + String.valueOf($h), "med-codes");
+		$s.quickMessage($s.getMednec(), $s, $c + "-" + $i, "med-codes");
+		retract($p);
+end
+
+rule "Missing cpt and icd codes"
+	when
+		$m : MedicalInfo( cptCode.equals("") || icd10Codes.equals("") )
+		$s : ServiceAgent( demo_step == 2 )
+	then
+		$s.missingData();
+		retract($m);
+end
+
+rule "Receive clinical"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("clinical-report") )
+		$s : ServiceAgent( name.equals(((AID)$r).getName()) )
+	then
+		$s.parseClinical($c);
+		retract($a);		
+end
+		
+rule "Med nec approve"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("med-nec-approve") )
+		$s : ServiceAgent( name.equals(((AID)$r).getName()), demo_step == 4 )
+		$m : MedicalInfo( $cpt : cptCode, $med : medication )
+	then
+		$s.quickMessage($s.getManager(), $s, $c+"\nService Approval: "+$med+" ("+$cpt+")", "service-approval");
+		retract($m);
+		retract($a);
+end	
+
+rule "Med nec deny"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("med-nec-deny") )
+		$m : MedicalInfo( )
+		$s : ServiceAgent( name.equals(((AID)$r).getName()), demo_step == 4 )
+	then
+		$s.quickMessage($s.getManager(), $s, $c+"\nService Denial: Need clinical docs for Primary immunodeficiency (D83.9)", "service-denial");
+		retract($m);
+		retract($a);
+end	
+
+		
+		

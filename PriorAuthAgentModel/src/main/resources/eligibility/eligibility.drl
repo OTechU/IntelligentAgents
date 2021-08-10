@@ -1,0 +1,111 @@
+//created on: Jul 16, 2021
+package model
+
+//list any import classes here.
+import model.EligibilityAgent;
+import data.MedicalInfo;
+import data.Patient;
+import policies.Policy;
+import data.Physician;
+
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+//declare any global variables here
+
+
+
+
+
+rule "Initial message"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("initial-info") )
+		$e : EligibilityAgent( name.equals(((AID)$r).getName()), demo_step == 4 )
+	then
+		$e.parseForm($c);
+		retract($a);		
+end
+
+rule "Missing name"
+	when
+		$p : Patient( firstName.equals("") || lastName.equals("") )
+	then
+		System.out.println("Missing name");
+end
+
+rule "Check name"
+	when 
+		$p : Patient( $f : firstName, $l : lastName )
+		$i : MedicalInfo( $m : medication, $d : diagnosis )
+	then
+		//System.out.println("Patient: " + $l + ", " +$f);
+end
+
+rule "Check treatment"
+	when 
+		$i : MedicalInfo( $m : medication, $d : diagnosis )
+	then
+		//System.out.println("Treatment: " + $m + " for " +$d);
+end
+
+rule "In Network" salience 1
+	when
+		$p : Physician( $n : npiNumber )
+		$pc : Policy( $npis : net_npis, net_npis contains $n )
+	then
+		$p.setInNetwork(true);
+end
+
+rule "Out of Network" salience 1
+	when
+		$p : Physician( $n : npiNumber )
+		$pc : Policy( $npis : net_npis, !(net_npis contains $n) )
+	then
+		$p.setInNetwork(false);
+end
+
+rule "Covered"
+	when
+		$i : MedicalInfo( $m : medication, $d : diagnosis, $e : explanation)
+		$p : Physician( $n : inNetwork )
+		$pc : Policy( $oc : oon_covered, $nnc : net_not_covered)
+		$elig : EligibilityAgent()
+		$pat : Patient()
+	then
+		if ($n) {
+			boolean bool = true;
+			for (String covered : $nnc) {
+				if ($e.equals(covered)) {
+					bool = false;
+				}
+			}
+			if (bool) {
+				//System.out.println("Policy allows eligibility for treatment");
+				$elig.quickMessage( $elig.getManager(), $elig, "Policy allows eligibility for treatment", "eligibility-approval");
+				
+			} else {
+				//System.out.println("Policy does not allow eligibility for treatment");
+				$elig.quickMessage( $elig.getManager(), $elig, "Policy does not allow eligibility for treatment", "eligibility-denial");
+				
+			}
+		} else {
+			boolean bool = false;
+			for (String covered : $oc) {
+				if ($e.equals(covered)) {
+					bool = true;
+				}
+			}
+			if (bool) {
+				//System.out.println("Policy allows eligibility for treatment");
+				$elig.quickMessage( $elig.getManager(), $elig, "Policy allows eligibility for treatment", "eligibility-approval");
+			} else {
+				//System.out.println("Policy does not allow eligibility for treatment");
+				$elig.quickMessage( $elig.getManager(), $elig, "Policy does not allow eligibility for treatment", "eligibility-denial");
+			}
+		}
+		
+		retract($i);
+		retract($p);
+		retract($pc);
+		retract($pat);
+end

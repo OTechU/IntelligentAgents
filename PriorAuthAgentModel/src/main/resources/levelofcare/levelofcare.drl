@@ -1,0 +1,74 @@
+//created on: Jul 20, 2021
+package model
+
+//list any import classes here.
+import model.LevelOfCareAgent;
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+//declare any global variables here
+
+
+
+
+
+rule "Initial message"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("med-codes") )
+		$l : LevelOfCareAgent( name.equals(((AID)$r).getName()) )
+	then
+		$l.parseContent($c);
+		update($l);
+		retract($a);		
+end
+
+rule "Score report"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("esi-request") )
+		$l : LevelOfCareAgent( name.equals(((AID)$r).getName()) )
+	then
+		$l.quickMessage($l.getMednec(), $l, String.valueOf($l.getEsi_level()), "esi-report");
+		retract($a);		
+end
+
+		
+/* ESI Levels - based on simple facts */
+
+// Most severe
+rule "ESI 1"
+	when
+		//No condition
+		$l : LevelOfCareAgent( false )
+	then
+		System.out.println("Uh oh rule fired");
+		$l.setEsi_level(1);
+end
+
+rule "ESI 2"
+	when
+		$l : LevelOfCareAgent( isHospitalized(), icd10.equals("D83.9") )
+	then
+		$l.setEsi_level(2);
+end
+
+rule "ESI 3"
+	when
+		$l : LevelOfCareAgent( isHospitalized(), !icd10.equals("D83.9"), !icd10.equals("") )
+	then
+		$l.setEsi_level(3);
+end
+
+rule "ESI 4"
+	when
+		$l : LevelOfCareAgent( !isHospitalized(), icd10.equals("D83.9") )
+	then
+		$l.setEsi_level(4);
+end
+
+// Least severe
+rule "ESI 5"
+	when
+		$l : LevelOfCareAgent( !isHospitalized(), !icd10.equals("D83.9"), !icd10.equals("") )
+	then
+		$l.setEsi_level(5);
+end

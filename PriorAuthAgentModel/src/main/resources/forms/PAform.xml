@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pa_form>
+	<date>07/21/2021</date>
+	<patient_info>
+		<first_name>First</first_name>
+		<last_name>Last</last_name>
+		<member_id>12345678</member_id>
+		<address>123 First Ave</address>
+		<city>Minneapolis</city>
+		<state>MN</state>
+		<zip>55414</zip>
+		<phone>8888888888</phone>
+		<dob>12/31/1999</dob>
+		<allergies></allergies>
+		<primary_insurance>UHC</primary_insurance>
+		<policy_num>12345</policy_num>
+		<group_num>12345</group_num>
+		<new>false</new>
+		<continued>07/21/2021</continued>
+		<hospitalized>false</hospitalized>
+	</patient_info>
+	<insurance_info>
+	</insurance_info>
+	<physician_info>
+		<first_name>Bob</first_name>
+		<last_name>Smith</last_name>
+		<credential>M.D.</credential>
+		<address>11000 Optum Cir</address>
+		<city>Eden Prairie</city>
+		<state>MN</state>
+		<zip>55344</zip>
+		<phone>0123456789</phone>
+		<fax>0123456789</fax>
+		<npi_num>0001</npi_num>
+		<specialty>injections</specialty>
+		<contact_name>Burt</contact_name>
+		<hospital>Methodist Hospital</hospital>
+	</physician_info>
+	<medical_info>
+		<medication>IgIV</medication>
+		<strength>300mg</strength>
+		<directions>infusion</directions>
+		<diagnosis>Primary immunodeficiency</diagnosis>
+		<hiv_aids>false</hiv_aids>
+		<cpt_code>90283</cpt_code>
+		<icd_10>D83.9</icd_10>
+		<pregnant>false</pregnant>
+		<explanation>preventative care</explanation>
+		<prev_medications>
+			<medication>
+				<name>IgIV</name>
+				<strength>300mg</strength>
+				<date_range>2019-2020</date_range>
+				<description>Monthly infusion</description>
+			</medication>
+		</prev_medications>
+	</medical_info>
+</pa_form>

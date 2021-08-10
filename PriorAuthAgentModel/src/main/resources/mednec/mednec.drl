@@ -1,0 +1,82 @@
+//created on: Jul 16, 2021
+package model
+
+//list any import classes here.
+import model.MedNecAgent;
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+//declare any global variables here
+
+// Set of diagnoses that match IgIV
+declare AcceptedDiagnoses
+    codes : Set
+end
+
+
+
+rule "Init"
+
+    when
+        eval (true)
+    then
+        insert( new AcceptedDiagnoses(new HashSet<>(Arrays.asList("D83.9", "D69.3", "C91.1", "M30.3"))) );
+end
+
+/*---- Messages-----*/
+rule "Initial message"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("med-codes") )
+		$m : MedNecAgent( name.equals(((AID)$r).getName()), demo_step == 3 )
+	then
+		$m.parseContent($c);
+		retract($a);		
+end
+
+rule "ESI return"
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("esi-report") )
+		$m : MedNecAgent( name.equals(((AID)$r).getName()) )
+	then
+		$m.setEsi_level(Integer.valueOf($c));
+		update($m);
+		retract($a);		
+end
+
+
+/* ----Determine medical necessity based on esi and diagnosis---- */
+rule "Emergency approval"
+	when
+		$m : MedNecAgent( Esi_level <= 2, Esi_level != 0, $e : Esi_level, demo_step == 3 )
+	then
+		String str = "LevelofCare: ESI Level "+$e+"\nMed nec approves: emergency";
+		$m.quickMessage($m.getService(), $m, str, "med-nec-approve");
+		$m.setEsi_level(0);
+		update($m);
+end
+
+rule "Diagnosis is serious"
+	when
+		$m : MedNecAgent( Esi_level > 2, $i : icd10, $e : Esi_level, demo_step == 3 )
+		AcceptedDiagnoses( codes contains $i )
+	then
+		String str = "LevelofCare: ESI Level "+$e+"\nMed nec approves: diagnosis "+$i+" valid";
+		$m.quickMessage($m.getService(), $m, str, "med-nec-approve");
+		$m.setEsi_level(0);
+		update($m);
+end
+
+rule "Other"
+	when
+		$m : MedNecAgent( Esi_level > 2, $i : icd10, $e : Esi_level, demo_step == 3 )
+		AcceptedDiagnoses( !(codes contains $i) )
+	then
+		String str = "LevelofCare: ESI Level "+$e+"\nMed nec denies: diagnosis "+$i+" invalid";
+		$m.quickMessage($m.getService(), $m, str, "med-nec-deny");
+		$m.setEsi_level(0);
+		update($m);
+end

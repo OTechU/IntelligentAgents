@@ -1,0 +1,135 @@
+//created on: Jul 16, 2021
+package model
+
+//list any import classes here.
+import model.ManagerAgent;
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+//declare any global variables here
+
+
+
+
+rule "PA Form"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("facility-pa-request") )
+		$m : ManagerAgent( name.equals(((AID)$r).getName()), demo_step == 1 )
+	then
+		System.out.println("Manager got PA Request from " + $send);
+		$m.breakdownForm($c);
+		retract($a);		
+end
+
+rule "Eligibility Approval"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("eligibility-approval"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got approval from the eligibility agent!");
+		$m.setElig(true);
+		update($m);
+		retract($a);		
+end
+
+rule "Eligibility Denial"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("eligibility-denial"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got denial from the eligibility agent...");
+		$m.deny();
+		update($m);
+		retract($a);		
+end
+
+rule "Provider Approval"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("provider-approval"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got approval from the provider agent!");
+		$m.setProv(true);
+		update($m);
+		retract($a);		
+end
+
+rule "Provider Denial"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("provider-denial"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got denial from the provider agent...");
+		$m.deny();
+		update($m);
+		retract($a);		
+end
+
+rule "Service Approval"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("service-approval"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got approval from the service agent!");
+		$m.setServ(true);
+		update($m);
+		retract($a);		
+end
+
+rule "Service Denial"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("service-denial"))
+		$m : ManagerAgent( name.equals(((AID)$r).getName()) )
+	then
+		System.out.println($c);
+		System.out.println("Manager got denial from the service agent...");
+		$m.deny();
+		update($m);
+		retract($a);		
+end
+
+rule "PA Approval"
+	when 
+		$m : ManagerAgent( elig, prov, serv, demo_step == 5 )
+	then
+		System.out.println("PA REQUEST APPROVED");
+		$m.quickMessage($m.getFacility(), $m, "approved", "pa-approval");
+		$m.setElig(false);
+		$m.setProv(false);
+		$m.setServ(false);
+		update($m);
+end
+
+rule "PA Denial"
+	when 
+		$m : ManagerAgent( denied, demo_step == 5 )
+	then
+		System.out.println("PA REQUEST DENIED");
+		$m.quickMessage($m.getFacility(), $m, "denied", "pa-denial");
+		$m.setDenied(false);
+end
+
+rule "Clinical Doc Request"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("clinical-doc-request") )
+		$m : ManagerAgent( name.equals(((AID)$r).getName()))
+	then
+		System.out.println("Missing info from facility: " + $c);
+		System.out.println("Requesting clinical docs for this information");
+		$m.quickMessage($m.getFacility(), $m, $c, "clinical-doc-request");
+		retract($a);		
+end
+
+rule "Clinical Doc Recieved"
+	when
+		$a : ACLMessage( $send : sender.localName, $r : AllReceiver.next(), $c : content, ConversationId.equals("clinical-doc-recieved") )
+		$m : ManagerAgent( name.equals(((AID)$r).getName()))
+	then
+		$m.breakdownClinicalDoc($c);
+		retract($a);		
+end

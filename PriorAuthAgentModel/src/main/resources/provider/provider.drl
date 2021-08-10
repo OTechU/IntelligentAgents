@@ -1,0 +1,68 @@
+//created on: Jul 16, 2021
+package model
+
+//list any import classes here.
+import model.ProviderAgent;
+import data.Physician;
+import data.MedicalInfo;
+import policies.Policy;
+import jade.lang.acl.ACLMessage;
+import jade.core.AID;
+
+//declare any global variables here
+
+
+
+
+rule "Initial message" salience 1
+	when
+		$a : ACLMessage( $send : sender.name, $r : AllReceiver.next(), $c : content, ConversationId.equals("initial-info") )
+		$p : ProviderAgent( name.equals(((AID)$r).getName()), demo_step == 4 )
+	then
+		$p.parseForm($c);
+		retract($a);		
+end
+
+rule "Check physician name" salience 1
+	when
+		$p : Physician (!firstName.equals(""), !lastName.equals(""), !credentials.equals(""), $c : credentials, $f : firstName, $l : lastName)
+	then
+		//System.out.println("Physician Name: " + $l + ", " + $f + " (" + $c + ")");	
+end
+
+rule "Missing physician info" salience 1
+	when
+		$p : Physician (firstName.equals("") || lastName.equals("") || credentials.equals(""), $c : contactName)
+	then
+		System.out.println("Missing Physician info. Please contact " + $c + " for any information needed");
+end
+
+rule "Check physician hospital" salience 1
+	when
+		$p : Physician (!hospitalName.equals(""), $h : hospitalName)
+	then
+		//System.out.println("Physician Hospital: " + $h);	
+end
+
+
+rule "In Provider Network"
+	when
+		$p : Physician ( $n : npiNumber, $c : credentials, $f : firstName, $l : lastName, $h : hospitalName)
+		$pc : Policy ( $npis : net_npis)
+		$prov : ProviderAgent( demo_step == 4 )
+	then
+		boolean bool = false;
+		for (String npiNum : $npis) {
+			if (npiNum.equals($n)) {
+				bool = true;
+			}
+		}		
+		if (bool) {
+			$prov.quickMessage( $prov.getManager(), $prov, "Provider is in network for Dr. " + $f + " " + $l + " (" + $c + ") at " + $h , "provider-approval");
+		} else {
+			$prov.quickMessage( $prov.getManager(), $prov, "Provider is out of network for Dr. " + $f + " " + $l + " (" + $c + ") at " + $h, "provider-denial");
+		}
+		retract($p);
+		retract($pc);
+end
+

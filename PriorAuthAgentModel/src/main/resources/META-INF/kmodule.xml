@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule">
+    <kbase name="eligibility" packages="eligibility">
+        <ksession name="ksession-eligibility"/>
+    </kbase>
+    <kbase name="provider" packages="provider">
+        <ksession name="ksession-provider"/>
+    </kbase>
+    <kbase name="mednec" packages="mednec">
+        <ksession name="ksession-mednec"/>
+    </kbase>
+    <kbase name="service" packages="service">
+        <ksession name="ksession-service"/>
+    </kbase>
+    <kbase name="manager" packages="manager">
+        <ksession name="ksession-manager"/>
+    </kbase>
+    <kbase name="levelofcare" packages="levelofcare">
+        <ksession name="ksession-levelofcare"/>
+    </kbase>
+    <kbase name="controller" packages="controller">
+        <ksession name="ksession-controller"/>
+    </kbase>
+</kmodule>
