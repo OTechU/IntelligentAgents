@@ -55,7 +55,7 @@ Click Apply and Close.
     
     Create a new run configuration. Set Main class to `jade.Boot` this is reguired for any Jade run configuration. Arguments can be customized as needed. Currently, the following arguments are used to start the demo:
     
-    ```-gui -container-name "PriorAuth" -agents 'Facility:model.FacilityAgent;Manager:model.ManagerAgent;Eligibility:model.EligibilityAgent;Providers:model.ProviderAgent;Service:model.ServiceAgent;LevelOfCare:model.LevelOfCareAgent;MedNec:model.MedNecAgent;sniffer:jade.tools.sniffer.Sniffer;snifferstarter:util.SnifferStarter'```
+    ```-gui -container-name "PriorAuth" -agents "Facility:model.FacilityAgent;Manager:model.ManagerAgent;Eligibility:model.EligibilityAgent;Providers:model.ProviderAgent;Service:model.ServiceAgent;LevelOfCare:model.LevelOfCareAgent;MedNec:model.MedNecAgent;sniffer:jade.tools.sniffer.Sniffer;snifferstarter:util.SnifferStarter"```
 
 
 
