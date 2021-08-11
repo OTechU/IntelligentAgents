@@ -7,18 +7,27 @@
 
 
 ## Clone Repo Into Eclipse
-1. [Code repo](https://github.optum.com/kkalyan7/PriorAuthModel)
+1. [Code repo](https://github.com/OptumTechUniversity/IntelligentAgents)
 
 
 2. **Import project from git**
 
-![text](./images/GitImport/ImportMenu.png)
-![text](./images/GitImport/RepoMenu.png)
-![text](./images/GitImport/CloneMenu.png)
-![text](./images/GitImport/BranchMenu.png)
-![text](./images/GitImport/DestMenu.png)
-![text](./images/GitImport/ProjectMenu.png)
-![text](./images/GitImport/FinalMenu.png)
+Open the Show View menu by selecting Window > Show View > Other... from the Eclipse menu bar. Select Git Repositories as seen in the image below and click Open.
+
+![text](./images/CloneMenus/ShowView.png)
+
+Within the Git Repositories view, select 'Clone a Git repository' and enter `https://github.com/OptumTechUniversity/IntelligentAgents.git` into the URI field as seen below. Other fields will automatically populate after.
+
+![text](./images/CloneMenus/CloneMenu.png)
+
+Select the branches you would like to checkout and click Next.
+
+![text](./images/CloneMenus/BranchMenu.png)
+
+Make sure 'Import all existing Eclipse projects after clone finishes' is selected. Default options are okay otherwise. Click finish and wait for cloning to finish. This may take a moment. The PriorAuthAgentModel project will appear in your list of projects if cloning was successful.
+
+![text](./images/CloneMenus/DestMenu.png)
+
 
 
 3. **Set build path**
@@ -39,6 +48,8 @@ Remove the existing source folder and add `src/main/java` and `src/main/resource
 
 Drools Library should already be in the classpath if project was converted correctly. Add jade.jar into the classpath as an external jar. Add JRE if missing.
 Click Apply and Close.
+
+*Note:* If errors related to imports being accessible from multiple modules exist in the project, switch your JRE to JavaSE-1.8
 
 4. **Set run configurations**
     
